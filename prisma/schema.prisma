@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TargetUnit {
+  hours
+  sessions
+  count
+}
+
+enum Priority {
+  high
+  medium
+  low
+}
+
+enum TaskStatus {
+  open
+  done
+}
+
+enum FocusSessionStatus {
+  running
+  paused
+  completed
+  cancelled
+}
+
+model LifeArea {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  weeklyTarget  Float
+  targetUnit    TargetUnit
+  priority      Priority
+  sortOrder     Int            @default(0)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  activityLogs  ActivityLog[]
+  tasks         Task[]
+  focusSessions FocusSession[]
+}
+
+model ActivityLog {
+  id              String        @id @default(cuid())
+  lifeAreaId      String
+  lifeArea        LifeArea      @relation(fields: [lifeAreaId], references: [id], onDelete: Cascade)
+  date            String
+  durationMinutes Int?
+  note            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  focusSession    FocusSession?
+
+  @@index([lifeAreaId, date])
+}
+
+model FocusSession {
+  id              String             @id @default(cuid())
+  lifeAreaId      String
+  lifeArea        LifeArea           @relation(fields: [lifeAreaId], references: [id], onDelete: Cascade)
+  startedAt       DateTime           @default(now())
+  endedAt         DateTime?
+  plannedMinutes  Int
+  elapsedSeconds  Int                @default(0)
+  lastResumedAt   DateTime?
+  status          FocusSessionStatus
+  note            String?
+  activityLogId   String?            @unique
+  activityLog     ActivityLog?       @relation(fields: [activityLogId], references: [id], onDelete: SetNull)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([status])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  lifeAreaId  String
+  lifeArea    LifeArea   @relation(fields: [lifeAreaId], references: [id], onDelete: Cascade)
+  title       String
+  dueDate     String?
+  isUrgent    Boolean    @default(false)
+  status      TaskStatus @default(open)
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([lifeAreaId, status])
+}

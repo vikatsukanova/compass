@@ -1,5 +1,7 @@
 # Compass
 
+**[Live demo](https://compass-demo-tau.vercel.app)**: no sign-in needed; it opens as the sample user John Smith.
+
 A personal focus and life-balance app. Open it first thing in the morning and know what to focus on today — not because you have the most tasks, but because some parts of your life need attention.
 
 **Not a generic todo app.** Compass shows when you are over-focusing on one area and neglecting others.
